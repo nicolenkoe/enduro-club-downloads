@@ -1,0 +1,36 @@
+name: Publish APK download page
+on:
+  push:
+    branches: [github-downloads]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: download-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble and verify the complete APK
+        run: python3 build.py
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Publish download page
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify complete anonymous external download
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          curl --fail --location --retry 5 --retry-delay 10 --output /tmp/downloaded.apk "${PAGE_URL%/}/Enduro-0.15.68.apk"
+          cmp _site/Enduro-0.15.68.apk /tmp/downloaded.apk
+          sha256sum /tmp/downloaded.apk
