@@ -1,7 +1,7 @@
 name: Publish APK download page
 on:
   push:
-    branches: [github-downloads]
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
