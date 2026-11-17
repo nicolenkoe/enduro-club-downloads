@@ -12,5 +12,6 @@
     "Проверка обновлений Android перенесена на GitHub"
   ],
   "apkSha256": "d994573db2f515c39dc7665157f875eb35526e8ca66856c120f99ef0c538e632",
-  "apkBytes": 133771652
+  "apkBytes": 133771652,
+  "status": "testing"
 }

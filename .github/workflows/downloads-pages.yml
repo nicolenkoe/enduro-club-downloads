@@ -48,7 +48,7 @@ jobs:
           python3 checks/serve.py > /tmp/browser-server.log 2>&1 &
           browser_server_pid=$!
           trap 'kill "$browser_server_pid"' EXIT
-          { node checks/browser-game.mjs && node checks/webgl-recovery.mjs && node checks/video-controls.mjs; } 2>&1 | tee /tmp/browser-check.log
+          { node checks/browser-game.mjs && node checks/webgl-recovery.mjs && node checks/video-controls.mjs && node checks/release-list.mjs; } 2>&1 | tee /tmp/browser-check.log
       - uses: actions/configure-pages@v5
         id: pages_config
         with:
