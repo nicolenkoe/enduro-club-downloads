@@ -1,0 +1,35 @@
+name: Inspect failed browser verification
+on:
+  push:
+    branches: [diagnose-request]
+permissions:
+  actions: read
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Collect browser failure evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh api "repos/$GH_REPO/actions/runs/44004827229/logs" > /tmp/logs.zip
+          python3 - <<'PY'
+          import zipfile,json
+          archive=zipfile.ZipFile('/tmp/logs.zip');logs={}
+          for name in archive.namelist():
+              if 'Verify real browser' in name:
+                  logs[name]=archive.read(name).decode('utf8','replace')[-18000:]
+          open('/tmp/diagnostic.json','w').write(json.dumps(logs))
+          PY
+          gh api --method POST "repos/$GH_REPO/git/refs" -f ref=refs/heads/ci-diagnostics -f sha="$GITHUB_SHA" || true
+          DIAG_SHA=$(gh api "repos/$GH_REPO/contents/status.json?ref=ci-diagnostics" --jq .sha 2>/dev/null || true)
+          export DIAG_SHA
+          python3 - <<'PY'
+          import json,base64,os
+          body={'message':'Record independent browser failure log','branch':'ci-diagnostics','content':base64.b64encode(open('/tmp/diagnostic.json','rb').read()).decode()}
+          if os.environ.get('DIAG_SHA'):body['sha']=os.environ['DIAG_SHA']
+          open('/tmp/request.json','w').write(json.dumps(body))
+          PY
+          gh api --method PUT "repos/$GH_REPO/contents/status.json" --input /tmp/request.json > /dev/null
