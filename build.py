@@ -25,15 +25,24 @@ r['apkUrl']='./Enduro-0.15.69.apk';r.pop('webZipUrl',None)
 (out/'latest-release.json').write_text(json.dumps(r,ensure_ascii=False,indent=2))
 print('Verified APK bytes and checksum. Only _site is published.')
 
-# Separate static pet-camera site; leave the existing Enduro distribution unchanged.
-hvost=root/"hvost-pod-kontrolem"
-if hvost.is_dir():shutil.copytree(hvost,out/"hvost-pod-kontrolem")
-
+# Separate pet-camera website, archive and update feed. Existing Enduro files are unchanged.
+hvost=root/'hvost-pod-kontrolem'
 if hvost.is_dir():
- info=json.loads((hvost/'release.json').read_text())
- target=out/'hvost-pod-kontrolem'/info['fileName']
- with target.open('wb') as destination:
-  for i in range(2):destination.write((root/'hvost-apk-parts'/f"{info['fileName']}.part{i}").read_bytes())
- assert target.stat().st_size==info['bytes'],'Incorrect Hvost APK size'
- with target.open('rb') as uploaded:assert hashlib.file_digest(uploaded,'sha256').hexdigest()==info['sha256'],'Incorrect Hvost APK checksum'
- print('Hvost APK assembled and verified; existing Enduro files preserved.')
+ shutil.copytree(hvost,out/'hvost-pod-kontrolem')
+ catalog=json.loads((hvost/'versions.json').read_text())
+ latest=json.loads((hvost/'release.json').read_text())
+ feed=json.loads((hvost/'update.json').read_text())
+ assert feed['versionCode']==latest['versionCode']==catalog['latest']
+ assert feed['sha256']==latest['sha256'] and feed['bytes']==latest['bytes']
+ assert feed['parts']==[{'url':latest['fileName'],'size':latest['bytes']}]
+ for info in catalog['releases']:
+  name=info['fileName']
+  assert pathlib.Path(name).name==name and name.endswith('.apk')
+  target=out/'hvost-pod-kontrolem'/name
+  count=(info['bytes']+40*1024*1024-1)//(40*1024*1024)
+  with target.open('wb') as destination:
+   for i in range(count):
+    with (root/'hvost-apk-parts'/f'{name}.part{i}').open('rb') as part:shutil.copyfileobj(part,destination)
+  assert target.stat().st_size==info['bytes'],'Incorrect Hvost APK size'
+  with target.open('rb') as uploaded:assert hashlib.file_digest(uploaded,'sha256').hexdigest()==info['sha256'],'Incorrect Hvost APK checksum'
+ print('Hvost versions, feed and complete APKs verified; Enduro preserved.')
