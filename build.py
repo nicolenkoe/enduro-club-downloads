@@ -18,3 +18,16 @@ assert hashlib.file_digest(apk.open('rb'),'sha256').hexdigest()==r['apkSha256'],
 r['apkUrl']='./Enduro-0.15.68.apk';r.pop('webZipUrl',None)
 (out/'latest-release.json').write_text(json.dumps(r,ensure_ascii=False,indent=2))
 print('Verified APK bytes and checksum. Only _site is published.')
+
+# Separate static pet-camera site; leave the existing Enduro distribution unchanged.
+hvost=root/"hvost-pod-kontrolem"
+if hvost.is_dir():shutil.copytree(hvost,out/"hvost-pod-kontrolem")
+
+if hvost.is_dir():
+ info=json.loads((hvost/'release.json').read_text())
+ target=out/'hvost-pod-kontrolem'/info['fileName']
+ with target.open('wb') as destination:
+  for i in range(2):destination.write((root/'hvost-apk-parts'/f"{info['fileName']}.part{i}").read_bytes())
+ assert target.stat().st_size==info['bytes'],'Incorrect Hvost APK size'
+ with target.open('rb') as uploaded:assert hashlib.file_digest(uploaded,'sha256').hexdigest()==info['sha256'],'Incorrect Hvost APK checksum'
+ print('Hvost APK assembled and verified; existing Enduro files preserved.')
