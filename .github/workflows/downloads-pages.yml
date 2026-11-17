@@ -19,6 +19,16 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install neural female voice tools
+        run: |
+          python -m pip install piper-tts==1.3.0
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Generate Russian female neural narration
+        run: python3 make-neural-guide.py
       - name: Assemble and verify the complete APK
         run: python3 build.py
       - uses: actions/configure-pages@v5
@@ -46,11 +56,16 @@ jobs:
           DOWNLOAD_OUTCOME: ${{ steps.download.outcome }}
           PAGES_CONFIG_OUTCOME: ${{ steps.pages_config.outcome }}
           GH_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ github.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           python3 - <<'PYREPORT'
           import os,json,datetime
           report={'pagesConfigResult':os.environ.get('PAGES_CONFIG_OUTCOME',''), 'version':'0.15.68','pageUrl':os.environ.get('PAGE_URL',''),'downloadResult':os.environ.get('DOWNLOAD_OUTCOME','not-run'),'runUrl':os.environ['RUN_URL'],'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+          import hashlib
+          report['sourceCommit']=os.environ.get('COMMIT_SHA','')
+          if os.path.exists('site/voice-info.json'):report['voice']=json.load(open('site/voice-info.json'))
+          report['pageSha256']=hashlib.sha256(open('site/index.html','rb').read()).hexdigest()
           import subprocess,zipfile,io
           prior=subprocess.run(['gh','api','repos/nicolenkoe/enduro-club-downloads/actions/runs/43994080528/logs'],capture_output=True)
           if prior.returncode==0:
@@ -63,6 +78,7 @@ jobs:
           git config user.name 'Enduro delivery checks'
           git config user.email 'checks@users.noreply.github.com'
           report_blob=$(git hash-object -w /tmp/delivery-status.json)
-          report_tree=$(printf '100644 blob %s\tstatus.json\n' "$report_blob" | git mktree)
+          guide_blob=$(git hash-object -w site/guide.mp4)
+          report_tree=$(printf '100644 blob %s\tstatus.json\n100644 blob %s\tguide.mp4\n' "$report_blob" "$guide_blob" | git mktree)
           report_commit=$(printf 'APK delivery verification result\n' | git commit-tree "$report_tree")
           git push origin "$report_commit:refs/heads/delivery-status" --force

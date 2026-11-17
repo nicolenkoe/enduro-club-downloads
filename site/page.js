@@ -1,0 +1,11 @@
+const address='https://nicolenkoe.github.io/enduro-club-downloads/';
+const status=document.querySelector('#status');
+document.querySelector('#copy-link').onclick=async()=>{try{await navigator.clipboard.writeText(address);status.textContent='Ссылка скопирована';}catch{status.textContent=address;}};
+document.querySelector('#share-page').onclick=async()=>{try{if(navigator.share)await navigator.share({title:'Enduro Club Ленинградская',text:'Твоя трасса, твои правила',url:address});else document.querySelector('#copy-link').click();}catch(e){if(e.name!=='AbortError')status.textContent=address;}};
+document.querySelector('#share-qr').onclick=async()=>{try{const response=await fetch('./download-qr.png');if(!response.ok)throw Error();const file=new File([await response.blob()],'Enduro-Club-QR.png',{type:'image/png'});if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file],title:'Enduro Club'});else{const a=document.createElement('a');a.href='./download-qr.png';a.download='Enduro-Club-QR.png';a.click();}}catch(e){if(e.name!=='AbortError')status.textContent='Ссылка на игру: '+address;}};
+const cards=[...document.querySelectorAll('[data-shot]')],dialog=document.querySelector('#screenshot-dialog');let index=0;
+function show(n){index=(n+cards.length)%cards.length;const source=cards[index].querySelector('img');document.querySelector('#shot-full').src=source.src;document.querySelector('#shot-full').alt=source.alt;document.querySelector('#shot-caption').textContent=cards[index].querySelector('b').textContent;document.querySelector('#shot-count').textContent=(index+1)+' / '+cards.length;}
+cards.forEach((card,n)=>card.onclick=()=>{show(n);dialog.showModal();});
+document.querySelector('#shot-close').onclick=()=>dialog.close();document.querySelector('#shot-prev').onclick=()=>show(index-1);document.querySelector('#shot-next').onclick=()=>show(index+1);
+dialog.onkeydown=e=>{if(e.key==='ArrowRight')show(index+1);if(e.key==='ArrowLeft')show(index-1);};
+document.querySelectorAll('[data-gallery-step]').forEach(button=>button.onclick=()=>document.querySelector('.screenshot-gallery').scrollBy({left:Number(button.dataset.galleryStep)*(cards[0].getBoundingClientRect().width+20),behavior:'smooth'}));
