@@ -9,3 +9,16 @@ cards.forEach((card,n)=>card.onclick=()=>{show(n);dialog.showModal();});
 document.querySelector('#shot-close').onclick=()=>dialog.close();document.querySelector('#shot-prev').onclick=()=>show(index-1);document.querySelector('#shot-next').onclick=()=>show(index+1);
 dialog.onkeydown=e=>{if(e.key==='ArrowRight')show(index+1);if(e.key==='ArrowLeft')show(index-1);};
 document.querySelectorAll('[data-gallery-step]').forEach(button=>button.onclick=()=>document.querySelector('.screenshot-gallery').scrollBy({left:Number(button.dataset.galleryStep)*(cards[0].getBoundingClientRect().width+20),behavior:'smooth'}));
+
+const guideVideo=document.querySelector('#guide-video'),guideToggle=document.querySelector('#guide-play-toggle'),guideStatus=document.querySelector('#guide-autoplay-status');
+if(guideVideo&&guideToggle){
+ let autoplayTried=false;
+ const showToggle=()=>{guideToggle.hidden=false;guideToggle.querySelector('b').textContent=guideVideo.ended?'Смотреть ещё раз':guideVideo.currentTime>0?'Продолжить со звуком':'Смотреть инструкцию со звуком';};
+ async function playGuide(){autoplayTried=true;guideVideo.muted=false;if(guideVideo.ended)guideVideo.currentTime=0;try{await guideVideo.play();guideStatus.textContent='';}catch{showToggle();guideStatus.textContent='Нажми кнопку по центру, чтобы смотреть со звуком.';}}
+ guideToggle.onclick=playGuide;
+ guideVideo.addEventListener('playing',()=>{guideToggle.hidden=true;guideStatus.textContent='';});
+ guideVideo.addEventListener('pause',showToggle);guideVideo.addEventListener('ended',()=>{guideToggle.hidden=false;guideToggle.querySelector('b').textContent='Смотреть ещё раз';});
+ guideVideo.addEventListener('error',()=>{showToggle();guideStatus.textContent='Не удалось загрузить видео. Попробуй открыть его по ссылке ниже.';});
+ for(const link of document.querySelectorAll('a[href="#guide"]'))link.addEventListener('click',playGuide);
+ if('IntersectionObserver'in window){const observer=new IntersectionObserver(entries=>{if(!autoplayTried&&entries.some(entry=>entry.isIntersecting)&&document.visibilityState==='visible')playGuide();},{threshold:.35});observer.observe(guideVideo);}
+}

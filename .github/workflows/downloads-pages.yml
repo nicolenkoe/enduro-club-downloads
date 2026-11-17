@@ -32,6 +32,7 @@ jobs:
       - name: Assemble and verify the complete APK
         run: python3 build.py
       - name: Install browser verification tools
+        shell: bash
         run: |
           npm install --no-save --prefix /tmp/browser-check playwright@1.56.1 2>&1 | tee /tmp/browser-tools.log
           /tmp/browser-check/node_modules/.bin/playwright install --with-deps chromium 2>&1 | tee -a /tmp/browser-tools.log
@@ -44,6 +45,8 @@ jobs:
           browser_server_pid=$!
           trap 'kill "$browser_server_pid"' EXIT
           node checks/browser-game.mjs
+          node checks/webgl-recovery.mjs
+          node checks/video-controls.mjs
       - uses: actions/configure-pages@v5
         id: pages_config
         with:
