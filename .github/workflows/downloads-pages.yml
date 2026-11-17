@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  actions: read
   pages: write
   id-token: write
 concurrency:
@@ -21,6 +22,7 @@ jobs:
       - name: Assemble and verify the complete APK
         run: python3 build.py
       - uses: actions/configure-pages@v5
+        id: pages_config
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
@@ -42,11 +44,20 @@ jobs:
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
           DOWNLOAD_OUTCOME: ${{ steps.download.outcome }}
+          PAGES_CONFIG_OUTCOME: ${{ steps.pages_config.outcome }}
+          GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           python3 - <<'PYREPORT'
           import os,json,datetime
-          report={'version':'0.15.68','pageUrl':os.environ.get('PAGE_URL',''),'downloadResult':os.environ.get('DOWNLOAD_OUTCOME','not-run'),'runUrl':os.environ['RUN_URL'],'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+          report={'pagesConfigResult':os.environ.get('PAGES_CONFIG_OUTCOME',''), 'version':'0.15.68','pageUrl':os.environ.get('PAGE_URL',''),'downloadResult':os.environ.get('DOWNLOAD_OUTCOME','not-run'),'runUrl':os.environ['RUN_URL'],'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+          import subprocess,zipfile,io
+          prior=subprocess.run(['gh','api','repos/nicolenkoe/enduro-club-downloads/actions/runs/43994080528/logs'],capture_output=True)
+          if prior.returncode==0:
+              try:
+                  archive=zipfile.ZipFile(io.BytesIO(prior.stdout))
+                  report['previousRunErrors']=[line[-1200:] for name in archive.namelist() for line in archive.read(name).decode('utf8','replace').splitlines() if '##[error]' in line][:8]
+              except Exception: pass
           open('/tmp/delivery-status.json','w').write(json.dumps(report,indent=2)+'\n')
           PYREPORT
           git config user.name 'Enduro delivery checks'
