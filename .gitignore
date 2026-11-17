@@ -1,0 +1,6 @@
+_site/
+voice-build/
+site/voice-info.json
+__pycache__/
+site/guide-irina.mp4
+site/guide-player-irina.mp4

@@ -31,6 +31,19 @@ jobs:
         run: python3 make-neural-guide.py
       - name: Assemble and verify the complete APK
         run: python3 build.py
+      - name: Install browser verification tools
+        run: |
+          npm install --no-save --prefix /tmp/browser-check playwright@1.56.1
+          /tmp/browser-check/node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify real browser race before publication
+        id: browser_check
+        env:
+          PLAYWRIGHT_PACKAGE: /tmp/browser-check/node_modules/playwright/index.mjs
+        run: |
+          python3 checks/serve.py > /tmp/browser-server.log 2>&1 &
+          browser_server_pid=$!
+          trap 'kill "$browser_server_pid"' EXIT
+          node checks/browser-game.mjs
       - uses: actions/configure-pages@v5
         id: pages_config
         with:
@@ -49,11 +62,21 @@ jobs:
           curl --fail --location --retry 5 --retry-delay 10 --output /tmp/downloaded.apk "${PAGE_URL%/}/Enduro-0.15.68.apk"
           cmp _site/Enduro-0.15.68.apk /tmp/downloaded.apk
           sha256sum /tmp/downloaded.apk
+          curl --fail --location --retry 5 --retry-delay 10 --output /tmp/browser-index.html "${PAGE_URL%/}/play/"
+          cmp _site/play/index.html /tmp/browser-index.html
+          python3 - <<'PYGAME'
+          import os,pathlib,subprocess
+          for file in pathlib.Path('_site/play/assets').iterdir():
+              if file.suffix in ['.js','.glb']:
+                  subprocess.run(['curl','--fail','--silent','--show-error','--location','--retry','3','--output','/tmp/game-asset',os.environ['PAGE_URL'].rstrip('/')+'/play/assets/'+file.name],check=True)
+                  assert pathlib.Path('/tmp/game-asset').read_bytes()==file.read_bytes(),file.name
+          PYGAME
       - name: Record deployment and download result
         if: always()
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
           DOWNLOAD_OUTCOME: ${{ steps.download.outcome }}
+          BROWSER_RESULT: ${{ steps.browser_check.outcome }}
           PAGES_CONFIG_OUTCOME: ${{ steps.pages_config.outcome }}
           GH_TOKEN: ${{ github.token }}
           COMMIT_SHA: ${{ github.sha }}
@@ -63,6 +86,8 @@ jobs:
           import os,json,datetime
           report={'pagesConfigResult':os.environ.get('PAGES_CONFIG_OUTCOME',''), 'version':'0.15.68','pageUrl':os.environ.get('PAGE_URL',''),'downloadResult':os.environ.get('DOWNLOAD_OUTCOME','not-run'),'runUrl':os.environ['RUN_URL'],'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat()}
           import hashlib
+          report['browserResult']=os.environ.get('BROWSER_RESULT','not-run')
+          report['browserGameSha256']=hashlib.sha256(open('browser-game/index.html','rb').read()).hexdigest()
           report['sourceCommit']=os.environ.get('COMMIT_SHA','')
           if os.path.exists('site/voice-info.json'):report['voice']=json.load(open('site/voice-info.json'))
           report['pageSha256']=hashlib.sha256(open('site/index.html','rb').read()).hexdigest()
