@@ -2,6 +2,11 @@ name: Publish APK download page
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'hvost-pod-kontrolem/**'
+      - 'hvost-apk-parts/**'
+      - 'hvost-build.py'
+      - '.github/workflows/hvost-pages.yml'
   workflow_dispatch:
 permissions:
   contents: write

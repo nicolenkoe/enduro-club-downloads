@@ -1,0 +1,51 @@
+name: Publish Hvost website and updates
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hvost-pod-kontrolem/**'
+      - 'hvost-apk-parts/**'
+      - 'hvost-build.py'
+      - '.github/workflows/hvost-pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  deployments: read
+  pages: write
+  id-token: write
+concurrency:
+  group: download-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Preserve the currently published website and assemble Hvost
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 hvost-build.py build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - uses: actions/deploy-pages@v4
+        id: deploy
+      - name: Verify the public APK, update feed and version catalog
+        env:
+          PAGE_URL: ${{ steps.deploy.outputs.page_url }}
+        run: python3 hvost-build.py verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hvost-public-verification
+          path: hvost-verification.json
+          if-no-files-found: warn
