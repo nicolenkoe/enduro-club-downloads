@@ -4,7 +4,7 @@ on:
     branches: [main]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 concurrency:
@@ -30,9 +30,28 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
       - name: Verify complete anonymous external download
+        id: download
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           curl --fail --location --retry 5 --retry-delay 10 --output /tmp/downloaded.apk "${PAGE_URL%/}/Enduro-0.15.68.apk"
           cmp _site/Enduro-0.15.68.apk /tmp/downloaded.apk
           sha256sum /tmp/downloaded.apk
+      - name: Record deployment and download result
+        if: always()
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          DOWNLOAD_OUTCOME: ${{ steps.download.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PYREPORT'
+          import os,json,datetime
+          report={'version':'0.15.68','pageUrl':os.environ.get('PAGE_URL',''),'downloadResult':os.environ.get('DOWNLOAD_OUTCOME','not-run'),'runUrl':os.environ['RUN_URL'],'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+          open('/tmp/delivery-status.json','w').write(json.dumps(report,indent=2)+'\n')
+          PYREPORT
+          git config user.name 'Enduro delivery checks'
+          git config user.email 'checks@users.noreply.github.com'
+          report_blob=$(git hash-object -w /tmp/delivery-status.json)
+          report_tree=$(printf '100644 blob %s\tstatus.json\n' "$report_blob" | git mktree)
+          report_commit=$(printf 'APK delivery verification result\n' | git commit-tree "$report_tree")
+          git push origin "$report_commit:refs/heads/delivery-status" --force
