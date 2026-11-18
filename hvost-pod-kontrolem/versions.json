@@ -1,8 +1,29 @@
 {
   "schemaVersion": 1,
-  "latest": 53,
+  "latest": 54,
   "latestStable": null,
   "releases": [
+    {
+      "version": "0.54",
+      "versionCode": 54,
+      "minimumAndroid": "11",
+      "abi": [
+        "arm64-v8a"
+      ],
+      "fileName": "HvostPodKontrolem-0.54.apk",
+      "bytes": 78135208,
+      "sha256": "789dab0aad7140381319b4a41eb2f6b2fe4d7e92952ae21cfa263ef828767666",
+      "downloadUrl": "https://nicolenkoe.github.io/enduro-club-downloads/hvost-pod-kontrolem/HvostPodKontrolem-0.54.apk",
+      "releaseUrl": "https://nicolenkoe.github.io/enduro-club-downloads/hvost-pod-kontrolem/versions/",
+      "guide": "assets/guide-0.54.mp4",
+      "audioGuide": "assets/guide-0.54.mp3",
+      "experimental": [
+        "smart-zone",
+        "bluetooth-servo"
+      ],
+      "channel": "experimental",
+      "minSdk": 30
+    },
     {
       "version": "0.53",
       "versionCode": 53,
@@ -14,7 +35,7 @@
       "bytes": 78118824,
       "sha256": "6ff0c8bcf43eab4a4bf806caeef0f499539436b4d7d1253affea9adc0ff4fa22",
       "downloadUrl": "https://nicolenkoe.github.io/enduro-club-downloads/hvost-pod-kontrolem/HvostPodKontrolem-0.53.apk",
-      "releaseUrl": "https://nicolenkoe.github.io/enduro-club-downloads/hvost-pod-kontrolem/versions/",
+      "releaseUrl": "https://nicolenkoe.github.io/enduro-club-downloads/hvost-pod-kontrolem/testing/0.53.html",
       "guide": "assets/guide-0.53.mp4",
       "audioGuide": "assets/guide-0.53.mp3",
       "experimental": [
