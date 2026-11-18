@@ -29,3 +29,5 @@ jobs:
           tree=$(printf '100644 blob %s\tstatus.json\n' "$blob" | git mktree)
           commit=$(printf 'Publication status\n' | git commit-tree "$tree")
           git push origin "$commit:refs/heads/update70-status" --force
+
+# Refresh publication progress
