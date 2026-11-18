@@ -1,10 +1,28 @@
 {
   "releases": [
     {
+      "version": "0.15.70",
+      "versionCode": 92,
+      "publishedAt": "2026-11-18",
+      "apkUrl": "./Enduro-0.15.70.apk",
+      "notes": [
+        "Обновления автоматически скачиваются при запуске и возвращении в приложение",
+        "Добавлена настройка «Только стабильные версии», по умолчанию выключена",
+        "Скачанный исправный APK используется повторно; установка подтверждается Android",
+        "«Позже» откладывает установку, но не скачивание новых разрешённых версий"
+      ],
+      "apkSha256": "fd1cb6a5c4c61af00f97e5a87042494af01747b729186cead1d774632a099041",
+      "apkBytes": 133771652,
+      "status": "testing",
+      "packageName": "com.enduromoto.game",
+      "minSdk": 26,
+      "latest": true
+    },
+    {
       "version": "0.15.69",
       "versionCode": 91,
       "status": "testing",
-      "latest": true,
+      "latest": false,
       "publishedAt": "2026-11-17",
       "apkUrl": "./Enduro-0.15.69.apk",
       "notes": [
