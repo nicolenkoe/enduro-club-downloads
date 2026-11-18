@@ -14,7 +14,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api --method POST repos/nicolenkoe/enduro-club-downloads/actions/runs/44284647255/cancel || true
+          for attempt in 1 2 3 4 5 6 7 8; do
           gh api 'repos/nicolenkoe/enduro-club-downloads/actions/runs?head_sha=92daa06fca4f25e21564eac99e027c74a532da6d&per_page=10' > /tmp/update-runs.json
           python3 - <<'PYREPORT'
           import json,subprocess
@@ -22,13 +22,6 @@ jobs:
           for run in json.load(open('/tmp/update-runs.json'))['workflow_runs']:
               jobs=json.loads(subprocess.check_output(['gh','api',run['jobs_url']]))
               output.append({'name':run['name'],'status':run['status'],'conclusion':run['conclusion'],'url':run['html_url'],'jobs':jobs})
-          import zipfile,io
-          logs=subprocess.run(['gh','api','repos/nicolenkoe/enduro-club-downloads/actions/runs/44284647255/logs'],capture_output=True)
-          if logs.returncode==0 and output:
-              try:
-                  archive=zipfile.ZipFile(io.BytesIO(logs.stdout))
-                  output[0]['oldInstallLogs']={name:archive.read(name).decode('utf8','replace')[-7000:] for name in archive.namelist() if 'Install neural' in name}
-              except Exception:pass
           open('/tmp/probe.json','w').write(json.dumps(output,indent=2))
           PYREPORT
           git config user.name 'Enduro publication diagnostics'
@@ -37,6 +30,8 @@ jobs:
           tree=$(printf '100644 blob %s\tstatus.json\n' "$blob" | git mktree)
           commit=$(printf 'Publication status\n' | git commit-tree "$tree")
           git push origin "$commit:refs/heads/update70-status" --force
+          sleep 20
+          done
 
 # Refresh publication progress
 
