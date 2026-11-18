@@ -35,43 +35,31 @@ def build():
  # A stale snapshot must never roll another application's current page back.
  for name in ['index.html','latest-release.json','play/index.html']:
   if (out/name).is_file():assert (out/name).read_bytes()==public(name),f'Published page changed: {name}'
- own=out/'hvost-pod-kontrolem'
+ # The independent site must be live before retiring the old address.
+ with urllib.request.urlopen('https://nicolenkoe.github.io/hvost-pod-kontrolem-downloads/update.json',timeout=45) as response:
+  assert json.load(response)['versionCode']>=58,'Independent site is not ready'
+ def untouched():
+  return {str(p.relative_to(out)):hashlib.sha256(p.read_bytes()).hexdigest() for p in out.rglob('*') if p.is_file() and p.relative_to(out).parts[0]!='hvost-pod-kontrolem'}
+ before=untouched();own=out/'hvost-pod-kontrolem'
  if own.exists():shutil.rmtree(own)
- shutil.copytree(root/'hvost-pod-kontrolem',own)
- catalog=json.loads((own/'versions.json').read_text());latest=json.loads((own/'release.json').read_text());feed=json.loads((own/'update.json').read_text())
- assert feed['versionCode']==latest['versionCode']==catalog['latest']
- assert feed['sha256']==latest['sha256'] and feed['bytes']==latest['bytes']
- assert feed['parts']==[{'url':latest['fileName'],'size':latest['bytes']}]
- for info in catalog['releases']:
-  name=info['fileName'];assert pathlib.Path(name).name==name and name.endswith('.apk')
-  target=own/name;count=(info['bytes']+40*1024*1024-1)//(40*1024*1024)
-  with target.open('wb') as destination:
-   for i in range(count):
-    with (root/'hvost-apk-parts'/f'{name}.part{i}').open('rb') as source:shutil.copyfileobj(source,destination)
-  assert target.stat().st_size==info['bytes']
-  with target.open('rb') as source:assert hashlib.file_digest(source,'sha256').hexdigest()==info['sha256']
- print(f'Preserved live artifact from run{run}; verified both Hvost APKs and feed')
+ assert untouched()==before,'Unrelated published files changed'
+ print('Preserved every unrelated published file; removed only old Hvost subtree')
 def verify():
- own=root/'hvost-pod-kontrolem';latest=json.loads((own/'release.json').read_text());base='hvost-pod-kontrolem/'
- for attempt in range(15):
-  try:
-   feed=json.loads(public(base+'update.json?t='+str(time.time_ns())))
-   if feed['versionCode']==latest['versionCode']:break
-  except (urllib.error.URLError,ValueError):pass
-  time.sleep(2)
- else:raise RuntimeError('New update feed is not publicly available')
- for path in ['','testing/','versions/']:
-  page=public(base+path).decode('utf8');assert 'Хвост' in page
- assert json.loads(public(base+'versions.json'))['latest']==latest['versionCode']
- digest=hashlib.sha256();count=0
- request=urllib.request.Request(PUBLIC+base+latest['fileName'],headers={'Accept-Encoding':'identity'})
- with urllib.request.urlopen(request,timeout=90) as response:
-  while block:=response.read(1024*1024):digest.update(block);count+=len(block)
- assert count==latest['bytes'] and digest.hexdigest()==latest['sha256']
- voice=json.loads(public(base+'assets/voice-info.json'));assert voice['female'] and voice['version']==latest['version']
- for ext in ['mp4','mp3','vtt']:
-  name=f'assets/guide-{latest["version"]}.{ext}';assert public(base+name)==(own/name).read_bytes()
- report={'version':latest['version'],'channel':feed['channel'],'apkBytes':count,'apkSha256':digest.hexdigest(),'pageUrl':PUBLIC+base,'versionsUrl':PUBLIC+base+'versions/','checkedUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'voice':voice,'basePreserved':True}
- (root/'hvost-verification.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
- print('Verified public feed, website, catalog, female guide and complete APK without authentication')
+ out=root/'_site'
+ for name in ['index.html','latest-release.json','play/index.html']:
+  if (out/name).is_file():assert public(name)==(out/name).read_bytes(),f'Enduro changed: {name}'
+ paths=['hvost-pod-kontrolem/','hvost-pod-kontrolem/update.json','hvost-pod-kontrolem/HvostPodKontrolem-0.57.apk']
+ results=[]
+ for path in paths:
+  for attempt in range(20):
+   try:
+    request=urllib.request.Request(PUBLIC+path+'?removed='+str(time.time_ns()),method='HEAD',headers={'Cache-Control':'no-cache'})
+    with urllib.request.urlopen(request,timeout=30) as response:code=response.status
+   except urllib.error.HTTPError as e:code=e.code
+   if code==404:break
+   time.sleep(2)
+  assert code==404,f'Old Hvost still published: {path} ({code})';results.append(path)
+ report={'removedProject':'hvost-pod-kontrolem','oldPaths404':results,'enduroRootFilesUnchanged':True,'independentSite':'https://nicolenkoe.github.io/hvost-pod-kontrolem-downloads/','checkedUtc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+ (root/'hvost-verification.json').write_text(json.dumps(report,indent=2)+'\n')
+ print('PASS Enduro preserved, old Hvost URLs return404')
 if __name__=='__main__':build() if sys.argv[1]=='build' else verify()

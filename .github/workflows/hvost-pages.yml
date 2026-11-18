@@ -1,4 +1,4 @@
-name: Publish Hvost website and updates
+name: Remove old Hvost publication
 on:
   push:
     branches: [main]
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Preserve the currently published website and assemble Hvost
+      - name: Preserve Enduro and remove only old Hvost files
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -39,7 +39,7 @@ jobs:
           path: _site
       - uses: actions/deploy-pages@v4
         id: deploy
-      - name: Verify the public APK, update feed and version catalog
+      - name: Verify Enduro unchanged and old Hvost addresses removed
         env:
           PAGE_URL: ${{ steps.deploy.outputs.page_url }}
         run: python3 hvost-build.py verify
