@@ -3,7 +3,7 @@ on:
   push:
     branches: [diagnose-update70]
 permissions:
-  actions: read
+  actions: write
   contents: write
 jobs:
   inspect:
@@ -14,7 +14,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api 'repos/nicolenkoe/enduro-club-downloads/actions/runs?head_sha=a00515eeb1adc2fc569471390f40426349d9d162&per_page=10' > /tmp/update-runs.json
+          gh api --method POST repos/nicolenkoe/enduro-club-downloads/actions/runs/44284647255/cancel || true
+          gh api 'repos/nicolenkoe/enduro-club-downloads/actions/runs?head_sha=92daa06fca4f25e21564eac99e027c74a532da6d&per_page=10' > /tmp/update-runs.json
           python3 - <<'PYREPORT'
           import json,subprocess
           output=[]
