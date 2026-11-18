@@ -22,23 +22,3 @@ for release in catalog['releases']:
 print('All Enduro APKs verified against catalogue.')
 
 # Separate pet-camera website, archive and update feed. Existing Enduro files are unchanged.
-hvost=root/'hvost-pod-kontrolem'
-if hvost.is_dir():
- shutil.copytree(hvost,out/'hvost-pod-kontrolem')
- catalog=json.loads((hvost/'versions.json').read_text())
- latest=json.loads((hvost/'release.json').read_text())
- feed=json.loads((hvost/'update.json').read_text())
- assert feed['versionCode']==latest['versionCode']==catalog['latest']
- assert feed['sha256']==latest['sha256'] and feed['bytes']==latest['bytes']
- assert feed['parts']==[{'url':latest['fileName'],'size':latest['bytes']}]
- for info in catalog['releases']:
-  name=info['fileName']
-  assert pathlib.Path(name).name==name and name.endswith('.apk')
-  target=out/'hvost-pod-kontrolem'/name
-  count=(info['bytes']+40*1024*1024-1)//(40*1024*1024)
-  with target.open('wb') as destination:
-   for i in range(count):
-    with (root/'hvost-apk-parts'/f'{name}.part{i}').open('rb') as part:shutil.copyfileobj(part,destination)
-  assert target.stat().st_size==info['bytes'],'Incorrect Hvost APK size'
-  with target.open('rb') as uploaded:assert hashlib.file_digest(uploaded,'sha256').hexdigest()==info['sha256'],'Incorrect Hvost APK checksum'
- print('Hvost versions, feed and complete APKs verified; Enduro preserved.')
