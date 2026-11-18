@@ -1,3 +1,4 @@
+import {signerFingerprints} from './apk-signer-output.mjs';
 import {readFile,readdir,access} from 'node:fs/promises';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
@@ -12,8 +13,8 @@ if(sdk){const dirs=(await readdir(join(sdk,'build-tools'))).sort((a,b)=>b.locale
 if(!tools){const root=process.env.ENDURO_ANDROID_TOOLS||'/workspace/toolchains/enduro-android';tools={java:join(root,'java/jdk-21.0.8/bin/java'),jar:join(root,'build-tools/android-15/lib/apksigner.jar'),aapt:join(root,'build-tools/android-15/aapt2')};}
 function run(command,args){const result=spawnSync(command,args,{encoding:'utf8'});assert.equal(result.status,0,result.error?.message||result.stderr||'Android verification tool failed');if(args.includes('--print-certs'))console.log(JSON.stringify({signerTool:command,signerStdout:result.stdout,signerStderr:result.stderr}));return result.stdout;}
 const signed=tools.signer?run(tools.signer,['verify','--print-certs',file]):run(tools.java,['-jar',tools.jar,'verify','--print-certs',file]);
-const fingerprint=signed.match(/Signer #1 certificate SHA-256 digest: ([a-f\d]+)/i)?.[1]?.toLowerCase();assert.ok(fingerprint,'APK signer fingerprint');
+const fingerprints=signerFingerprints(signed);assert.ok(fingerprints.length,'APK signer fingerprint');
 const links=JSON.parse(await readFile(new URL('../public/.well-known/assetlinks.json',import.meta.url),'utf8'));
-const approved=links.filter(x=>x.target?.package_name==='com.enduromoto.game').flatMap(x=>x.target.sha256_cert_fingerprints||[]).map(x=>x.replaceAll(':','').toLowerCase());assert.ok(approved.includes(fingerprint),'APK uses the existing approved signing certificate');
+const approved=links.filter(x=>x.target?.package_name==='com.enduromoto.game').flatMap(x=>x.target.sha256_cert_fingerprints||[]).map(x=>x.replaceAll(':','').toLowerCase());assert.ok(fingerprints.every(fingerprint=>approved.includes(fingerprint)),'APK uses only the existing approved signing certificates');
 const manifest=run(tools.aapt,['dump','badging',file]);assert.ok(manifest.includes("package: name='com.enduromoto.game'"));assert.ok(manifest.includes("versionCode='"+release.versionCode+"'"));assert.ok(manifest.includes("versionName='"+release.version+"'"));
 console.log('PASS Android release: checksum, size, signature, approved certificate, package and version');
