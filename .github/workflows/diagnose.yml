@@ -22,6 +22,13 @@ jobs:
           for run in json.load(open('/tmp/update-runs.json'))['workflow_runs']:
               jobs=json.loads(subprocess.check_output(['gh','api',run['jobs_url']]))
               output.append({'name':run['name'],'status':run['status'],'conclusion':run['conclusion'],'url':run['html_url'],'jobs':jobs})
+          import zipfile,io
+          logs=subprocess.run(['gh','api','repos/nicolenkoe/enduro-club-downloads/actions/runs/44284647255/logs'],capture_output=True)
+          if logs.returncode==0 and output:
+              try:
+                  archive=zipfile.ZipFile(io.BytesIO(logs.stdout))
+                  output[0]['oldInstallLogs']={name:archive.read(name).decode('utf8','replace')[-7000:] for name in archive.namelist() if 'Install neural' in name}
+              except Exception:pass
           open('/tmp/probe.json','w').write(json.dumps(output,indent=2))
           PYREPORT
           git config user.name 'Enduro publication diagnostics'
@@ -32,3 +39,5 @@ jobs:
           git push origin "$commit:refs/heads/update70-status" --force
 
 # Refresh publication progress
+
+# Inspect old setup log
