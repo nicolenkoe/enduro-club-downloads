@@ -1,0 +1,17 @@
+{
+  "version": "0.15.71",
+  "versionCode": 93,
+  "publishedAt": "2026-11-21",
+  "apkUrl": "/downloads/Enduro-Club-0.15.71.apk",
+  "webZipUrl": "/downloads/Enduro-Club-Web-0.15.71.zip",
+  "notes": [
+    "Номер запущенной версии заметно показан в меню и во время заезда",
+    "Метка различает APK и веб-версию; остаётся видимой в компактном режиме",
+    "Метка версии не перехватывает нажатия и расположена отдельно от FPS"
+  ],
+  "apkSha256": "255bc5290662317dfc172a0b8d76c969b435492841b4f388b580b986b95bc9c2",
+  "apkBytes": 133771652,
+  "status": "testing",
+  "packageName": "com.enduromoto.game",
+  "minSdk": 26
+}
