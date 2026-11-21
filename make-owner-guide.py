@@ -9,4 +9,4 @@ for i in [1,2,3]:
  with wave.open(str(wav)) as w:duration=w.getnframes()/w.getframerate()+0.7
  subprocess.run(['ffmpeg','-y','-loglevel','error','-loop','1','-framerate','10','-i',str(root/'owner-guide-source'/f'scene{i}.png'),'-i',str(wav),'-vf','scale=1920:1080,format=yuv420p','-c:v','libx264','-preset','veryfast','-crf','25','-c:a','aac','-b:a','128k','-af','loudnorm=I=-16:TP=-1.5:LRA=11,apad=pad_dur=0.7','-t',str(duration),str(work/f'owner-part{i}.mp4')],check=True)
 (work/'owner-concat.txt').write_text(''.join(f"file 'owner-part{i}.mp4'\n" for i in [1,2,3]))
-subprocess.run(['ffmpeg','-y','-loglevel','error','-f','concat','-safe','0','-i',str(work/'owner-concat.txt'),'-c','copy','-movflags','+faststart',str(root/'site/checks-0.15.70.mp4')],check=True)
+subprocess.run(['ffmpeg','-y','-loglevel','error','-f','concat','-safe','0','-i',str(work/'owner-concat.txt'),'-c','copy','-movflags','+faststart',str(root/'site/checks-0.15.71.mp4')],check=True)

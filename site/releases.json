@@ -1,6 +1,23 @@
 {
   "releases": [
     {
+      "version": "0.15.71",
+      "versionCode": 93,
+      "publishedAt": "2026-11-21",
+      "apkUrl": "./Enduro-0.15.71.apk",
+      "notes": [
+        "Номер запущенной версии заметно показан в меню и во время заезда",
+        "Метка различает APK и веб-версию; остаётся видимой в компактном режиме",
+        "Метка версии не перехватывает нажатия и расположена отдельно от FPS"
+      ],
+      "apkSha256": "255bc5290662317dfc172a0b8d76c969b435492841b4f388b580b986b95bc9c2",
+      "apkBytes": 133771652,
+      "status": "testing",
+      "packageName": "com.enduromoto.game",
+      "minSdk": 26,
+      "latest": true
+    },
+    {
       "version": "0.15.70",
       "versionCode": 92,
       "publishedAt": "2026-11-18",
@@ -16,7 +33,7 @@
       "status": "testing",
       "packageName": "com.enduromoto.game",
       "minSdk": 26,
-      "latest": true
+      "latest": false
     },
     {
       "version": "0.15.69",
