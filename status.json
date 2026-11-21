@@ -1,0 +1,177 @@
+[
+  {
+    "name": "Publish APK download page",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/nicolenkoe/enduro-club-downloads/actions/runs/44936573112",
+    "jobs": {
+      "total_count": 1,
+      "jobs": [
+        {
+          "id": 136944381731,
+          "run_id": 44936573112,
+          "workflow_name": "Publish APK download page",
+          "head_branch": "main",
+          "run_url": "https://api.github.com/repos/nicolenkoe/enduro-club-downloads/actions/runs/44936573112",
+          "run_attempt": 1,
+          "node_id": "CR_kwDOVxEwIc8AAAAf4oVvIw",
+          "head_sha": "74b8de5664d2f12884d3b25cf9801151b47de045",
+          "url": "https://api.github.com/repos/nicolenkoe/enduro-club-downloads/actions/jobs/136944381731",
+          "html_url": "https://github.com/nicolenkoe/enduro-club-downloads/actions/runs/44936573112/job/136944381731",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-11-21T18:37:47Z",
+          "started_at": "2026-11-21T18:37:51Z",
+          "completed_at": "2026-11-21T18:41:58Z",
+          "name": "publish",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-11-21T18:37:52Z",
+              "completed_at": "2026-11-21T18:37:55Z"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-11-21T18:37:55Z",
+              "completed_at": "2026-11-21T18:38:15Z"
+            },
+            {
+              "name": "Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-11-21T18:38:15Z",
+              "completed_at": "2026-11-21T18:38:15Z"
+            },
+            {
+              "name": "Install neural female voice tools",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-11-21T18:38:15Z",
+              "completed_at": "2026-11-21T18:38:58Z"
+            },
+            {
+              "name": "Generate Russian female neural narration",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-11-21T18:38:58Z",
+              "completed_at": "2026-11-21T18:39:10Z"
+            },
+            {
+              "name": "Generate owner release checklist video",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-11-21T18:39:10Z",
+              "completed_at": "2026-11-21T18:39:19Z"
+            },
+            {
+              "name": "Assemble and verify the complete APK",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-11-21T18:39:19Z",
+              "completed_at": "2026-11-21T18:39:20Z"
+            },
+            {
+              "name": "Install browser verification tools",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-11-21T18:39:20Z",
+              "completed_at": "2026-11-21T18:39:40Z"
+            },
+            {
+              "name": "Verify real browser race before publication",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9,
+              "started_at": "2026-11-21T18:39:40Z",
+              "completed_at": "2026-11-21T18:41:08Z"
+            },
+            {
+              "name": "Run actions/configure-pages@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10,
+              "started_at": "2026-11-21T18:41:08Z",
+              "completed_at": "2026-11-21T18:41:09Z"
+            },
+            {
+              "name": "Run actions/upload-pages-artifact@v3",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11,
+              "started_at": "2026-11-21T18:41:09Z",
+              "completed_at": "2026-11-21T18:41:29Z"
+            },
+            {
+              "name": "Publish download page",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12,
+              "started_at": "2026-11-21T18:41:29Z",
+              "completed_at": "2026-11-21T18:41:46Z"
+            },
+            {
+              "name": "Verify complete anonymous external download",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13,
+              "started_at": "2026-11-21T18:41:46Z",
+              "completed_at": "2026-11-21T18:41:52Z"
+            },
+            {
+              "name": "Record deployment and download result",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14,
+              "started_at": "2026-11-21T18:41:52Z",
+              "completed_at": "2026-11-21T18:41:56Z"
+            },
+            {
+              "name": "Post Run actions/setup-python@v5",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 27,
+              "started_at": "2026-11-21T18:41:56Z",
+              "completed_at": "2026-11-21T18:41:56Z"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 28,
+              "started_at": "2026-11-21T18:41:56Z",
+              "completed_at": "2026-11-21T18:41:56Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 29,
+              "started_at": "2026-11-21T18:41:56Z",
+              "completed_at": "2026-11-21T18:41:56Z"
+            }
+          ],
+          "check_run_url": "https://api.github.com/repos/nicolenkoe/enduro-club-downloads/check-runs/136944381731",
+          "labels": [
+            "ubuntu-24.04"
+          ],
+          "runner_id": 1000000259,
+          "runner_name": "GitHub Actions 1000000259",
+          "runner_group_id": 0,
+          "runner_group_name": "GitHub Actions"
+        }
+      ]
+    }
+  }
+]
