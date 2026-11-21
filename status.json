@@ -1,0 +1,7 @@
+{
+  "result": "success",
+  "releaseSource": "74b8de5664d2f12884d3b25cf9801151b47de045",
+  "runUrl": "https://github.com/nicolenkoe/enduro-club-downloads/actions/runs/44936602964",
+  "checkedAt": "2026-11-21T18:41:57.285316+00:00",
+  "log": "{\"signerTool\":\"/usr/local/lib/android/sdk/build-tools/37.0.0/apksigner\",\"signerStdout\":\"V3.0 Signer: certificate DN: CN=Enduro Moto Debug, O=Development, C=US\\nV3.0 Signer: certificate SHA-256 digest: 7eed4cd1c73ddc9dfccda4e15e61dd7d722fd8b4667f6900eda2452ff07ccaea\\nV3.0 Signer: certificate SHA-1 digest: d886815496eec5b32b8a9c60568dc0db649cd336\\nV3.0 Signer: certificate MD5 digest: 26a017ca3c5e65197338aed33d5711c3\\n\",\"signerStderr\":\"\"}\nPASS Android release: checksum, size, signature, approved certificate, package and version\n{\n  \"delivery\": \"PASS\",\n  \"requestedUrl\": \"https://nicolenkoe.github.io/enduro-club-downloads/Enduro-0.15.71.apk\",\n  \"finalUrl\": \"https://nicolenkoe.github.io/enduro-club-downloads/Enduro-0.15.71.apk\",\n  \"bytes\": 133771652,\n  \"sha256\": \"255bc5290662317dfc172a0b8d76c969b435492841b4f388b580b986b95bc9c2\",\n  \"version\": \"0.15.71\",\n  \"checkedAt\": \"2026-11-21T18:41:57.209Z\",\n  \"phoneTested\": false\n}\n"
+}
