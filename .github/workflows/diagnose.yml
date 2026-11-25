@@ -15,18 +15,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           for attempt in 1 2 3 4 5 6 7 8; do
-          gh api 'repos/nicolenkoe/enduro-club-downloads/actions/runs?head_sha=2130b51a5b6d61223060eca705f6114a0aab9810&per_page=10' > /tmp/update-runs.json
+          gh api 'repos/nicolenkoe/enduro-club-downloads/actions/runs?head_sha=d6625abb57a43d63815324549d564a3283429c93&per_page=10' > /tmp/update-runs.json
           python3 - <<'PYREPORT'
           import json,subprocess
           output=[]
           for run in json.load(open('/tmp/update-runs.json'))['workflow_runs']:
               jobs=json.loads(subprocess.check_output(['gh','api',run['jobs_url']]))
               output.append({'runAttempt':run.get('run_attempt'),'updatedAt':run.get('updated_at'),'name':run['name'],'status':run['status'],'conclusion':run['conclusion'],'url':run['html_url'],'jobs':jobs})
-          import zipfile,io
-          prior=subprocess.run(['gh','api','repos/nicolenkoe/enduro-club-downloads/actions/runs/45544849392/logs'],capture_output=True)
-          if prior.returncode==0 and output:
-              archive=zipfile.ZipFile(io.BytesIO(prior.stdout))
-              output[0]['deploymentLogs']={name:archive.read(name).decode('utf8','replace')[-18000:] for name in archive.namelist() if 'Publish download page' in name or 'upload-pages-artifact' in name}
           open('/tmp/probe.json','w').write(json.dumps(output,indent=2))
           PYREPORT
           git config user.name 'Enduro publication diagnostics'
