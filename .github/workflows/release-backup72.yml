@@ -1,0 +1,50 @@
+name: Publish verified APK fallback on GitHub Releases
+on:
+  push:
+    branches: [release-backup72]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble the approved signed APK
+        run: |
+          cat apk-parts/Enduro-Club-0.15.72.apk.part0 apk-parts/Enduro-Club-0.15.72.apk.part1 > /tmp/Enduro-0.15.72.apk
+          echo '0640759fd9e9af90d604c8874c3caed1cd8fc401add4fe496951d6214303b800  /tmp/Enduro-0.15.72.apk' | sha256sum --check
+          test "$(stat -c%s /tmp/Enduro-0.15.72.apk)" = '133775748'
+      - name: Publish the same APK as a testing release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view v0.15.72 >/dev/null 2>&1; then
+            mkdir /tmp/existing
+            gh release download v0.15.72 --pattern Enduro-0.15.72.apk --dir /tmp/existing
+            cmp /tmp/Enduro-0.15.72.apk /tmp/existing/Enduro-0.15.72.apk
+          else
+            gh release create v0.15.72 /tmp/Enduro-0.15.72.apk --target d6625abb57a43d63815324549d564a3283429c93 --prerelease --title 'Enduro Club 0.15.72' --notes 'Нажатие на номер версии в главном меню запускает проверку обновлений. В APK используется встроенная проверка, в браузере предлагается обновить веб-игру. Тестовая сборка.'
+          fi
+      - name: Verify complete anonymous release-asset download and Android certificate
+        id: check
+        shell: bash
+        run: |
+          node checks/native-update/scripts/check-apk-download.mjs https://github.com/nicolenkoe/enduro-club-downloads/releases/download/v0.15.72/Enduro-0.15.72.apk 2>&1 | tee /tmp/release-check.log
+      - name: Record fallback download verification
+        if: always()
+        env:
+          RESULT: ${{ steps.check.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PYREPORT'
+          import json,pathlib,os,datetime
+          log=pathlib.Path('/tmp/release-check.log')
+          pathlib.Path('/tmp/report.json').write_text(json.dumps({'result':os.environ['RESULT'],'releaseSource':'d6625abb57a43d63815324549d564a3283429c93','runUrl':os.environ['RUN_URL'],'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'log':log.read_text() if log.exists() else 'Release asset not verified'},indent=2))
+          PYREPORT
+          git config user.name 'Enduro APK fallback verification'
+          git config user.email 'checks@users.noreply.github.com'
+          blob=$(git hash-object -w /tmp/report.json)
+          tree=$(printf '100644 blob %s\tstatus.json\n' "$blob" | git mktree)
+          commit=$(printf 'Verified direct APK fallback\n' | git commit-tree "$tree")
+          git push origin "$commit:refs/heads/update72-release-check" --force
