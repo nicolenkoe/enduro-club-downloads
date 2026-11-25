@@ -3,7 +3,7 @@ on:
   push:
     branches: [diagnose-version72]
 permissions:
-  actions: read
+  actions: write
   contents: write
 jobs:
   inspect:
@@ -15,6 +15,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           for attempt in 1; do
+          gh api --method POST repos/nicolenkoe/enduro-club-downloads/actions/runs/45544849392/rerun-failed-jobs
           gh api 'repos/nicolenkoe/enduro-club-downloads/actions/runs?head_sha=2130b51a5b6d61223060eca705f6114a0aab9810&per_page=10' > /tmp/update-runs.json
           python3 - <<'PYREPORT'
           import json,subprocess
