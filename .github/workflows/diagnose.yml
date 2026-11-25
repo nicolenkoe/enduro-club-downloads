@@ -1,7 +1,7 @@
-name: Inspect failed browser verification
+name: Inspect update publication
 on:
   push:
-    branches: [diagnose-request]
+    branches: [diagnose-version72]
 permissions:
   actions: read
   contents: write
@@ -9,27 +9,30 @@ jobs:
   inspect:
     runs-on: ubuntu-24.04
     steps:
-      - name: Collect browser failure evidence
+      - uses: actions/checkout@v4
+      - name: Read publication status
         env:
           GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
         run: |
-          gh api "repos/$GH_REPO/actions/runs/44004827229/logs" > /tmp/logs.zip
-          python3 - <<'PY'
-          import zipfile,json
-          archive=zipfile.ZipFile('/tmp/logs.zip');logs={}
-          for name in archive.namelist():
-              if 'Verify real browser' in name:
-                  logs[name]=archive.read(name).decode('utf8','replace')[-18000:]
-          open('/tmp/diagnostic.json','w').write(json.dumps(logs))
-          PY
-          gh api --method POST "repos/$GH_REPO/git/refs" -f ref=refs/heads/ci-diagnostics -f sha="$GITHUB_SHA" || true
-          DIAG_SHA=$(gh api "repos/$GH_REPO/contents/status.json?ref=ci-diagnostics" --jq .sha 2>/dev/null || true)
-          export DIAG_SHA
-          python3 - <<'PY'
-          import json,base64,os
-          body={'message':'Record independent browser failure log','branch':'ci-diagnostics','content':base64.b64encode(open('/tmp/diagnostic.json','rb').read()).decode()}
-          if os.environ.get('DIAG_SHA'):body['sha']=os.environ['DIAG_SHA']
-          open('/tmp/request.json','w').write(json.dumps(body))
-          PY
-          gh api --method PUT "repos/$GH_REPO/contents/status.json" --input /tmp/request.json > /dev/null
+          for attempt in 1 2 3 4 5 6 7 8; do
+          gh api 'repos/nicolenkoe/enduro-club-downloads/actions/runs?head_sha=2130b51a5b6d61223060eca705f6114a0aab9810&per_page=10' > /tmp/update-runs.json
+          python3 - <<'PYREPORT'
+          import json,subprocess
+          output=[]
+          for run in json.load(open('/tmp/update-runs.json'))['workflow_runs']:
+              jobs=json.loads(subprocess.check_output(['gh','api',run['jobs_url']]))
+              output.append({'name':run['name'],'status':run['status'],'conclusion':run['conclusion'],'url':run['html_url'],'jobs':jobs})
+          open('/tmp/probe.json','w').write(json.dumps(output,indent=2))
+          PYREPORT
+          git config user.name 'Enduro publication diagnostics'
+          git config user.email 'checks@users.noreply.github.com'
+          blob=$(git hash-object -w /tmp/probe.json)
+          tree=$(printf '100644 blob %s\tstatus.json\n' "$blob" | git mktree)
+          commit=$(printf 'Publication status\n' | git commit-tree "$tree")
+          git push origin "$commit:refs/heads/update72-status" --force
+          sleep 20
+          done
+
+# Refresh publication progress
+
+# Inspect old setup log
