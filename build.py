@@ -3,7 +3,7 @@ root=pathlib.Path(__file__).resolve().parent
 out=root/'_site'
 if out.exists():shutil.rmtree(out)
 out.mkdir()
-for name in ['index.html','checks-0.15.71.mp4','guide.mp4','latest-release.json','releases.json','previous-release.json','voice-info.json','page.js','download-green.css','club-logo-download.png','download-qr.png','download-arrow.svg','download-media','fonts']:
+for name in ['index.html','checks-0.15.72.mp4','guide.mp4','latest-release.json','releases.json','previous-release.json','voice-info.json','page.js','download-green.css','club-logo-download.png','download-qr.png','download-arrow.svg','download-media','fonts']:
  p=root/'site'/name
  if p.is_dir():shutil.copytree(p,out/name)
  else:shutil.copy2(p,out/name)

@@ -52,7 +52,7 @@ jobs:
           python3 checks/serve.py > /tmp/browser-server.log 2>&1 &
           browser_server_pid=$!
           trap 'kill "$browser_server_pid"' EXIT
-          { node checks/browser-game.mjs && node checks/webgl-recovery.mjs && node checks/video-controls.mjs && node checks/release-list.mjs; } 2>&1 | tee /tmp/browser-check.log
+          { node checks/browser-game.mjs && node checks/webgl-recovery.mjs && node checks/video-controls.mjs && node checks/release-list.mjs && node checks/version-update-click.mjs; } 2>&1 | tee /tmp/browser-check.log
       - uses: actions/configure-pages@v5
         id: pages_config
         with:
@@ -68,8 +68,8 @@ jobs:
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
-          curl --fail --location --retry 5 --retry-delay 10 --dump-header /tmp/apk-headers.txt --write-out '%{json}' --output /tmp/downloaded.apk "${PAGE_URL%/}/Enduro-0.15.71.apk" > /tmp/apk-http.json
-          cmp _site/Enduro-0.15.71.apk /tmp/downloaded.apk
+          curl --fail --location --retry 5 --retry-delay 10 --dump-header /tmp/apk-headers.txt --write-out '%{json}' --output /tmp/downloaded.apk "${PAGE_URL%/}/Enduro-0.15.72.apk" > /tmp/apk-http.json
+          cmp _site/Enduro-0.15.72.apk /tmp/downloaded.apk
           sha256sum /tmp/downloaded.apk
           curl --fail --location --retry 5 --retry-delay 10 --output /tmp/browser-index.html "${PAGE_URL%/}/play/"
           cmp _site/play/index.html /tmp/browser-index.html
@@ -93,7 +93,7 @@ jobs:
         run: |
           python3 - <<'PYREPORT'
           import os,json,datetime
-          report={'pagesConfigResult':os.environ.get('PAGES_CONFIG_OUTCOME',''), 'version':'0.15.71','pageUrl':os.environ.get('PAGE_URL',''),'downloadResult':os.environ.get('DOWNLOAD_OUTCOME','not-run'),'runUrl':os.environ['RUN_URL'],'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+          report={'pagesConfigResult':os.environ.get('PAGES_CONFIG_OUTCOME',''), 'version':'0.15.72','pageUrl':os.environ.get('PAGE_URL',''),'downloadResult':os.environ.get('DOWNLOAD_OUTCOME','not-run'),'runUrl':os.environ['RUN_URL'],'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat()}
           import hashlib
           if os.path.exists('/tmp/browser-tools.log'):report['browserToolsLogTail']=open('/tmp/browser-tools.log').read()[-5000:]
           if os.path.exists('/tmp/browser-check.log'):report['browserCheckLogTail']=open('/tmp/browser-check.log').read()[-8000:]
