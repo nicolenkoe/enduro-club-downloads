@@ -1,0 +1,41 @@
+name: Independently download and verify Android APK
+on:
+  push:
+    branches: [verify-update72-final]
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for public APK
+        run: |
+          for attempt in $(seq 1 80); do
+            if curl --fail --silent --head https://nicolenkoe.github.io/enduro-club-downloads/Enduro-0.15.72.apk >/dev/null; then exit 0; fi
+            sleep 15
+          done
+          exit 1
+      - name: Complete anonymous GET, hash, package, version and signing certificate
+        id: apk
+        shell: bash
+        run: |
+          node checks/native-update/scripts/check-apk-download.mjs https://nicolenkoe.github.io/enduro-club-downloads/Enduro-0.15.72.apk 2>&1 | tee /tmp/native-apk-check.log
+      - name: Record independent APK result
+        if: always()
+        env:
+          RESULT: ${{ steps.apk.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PYREPORT'
+          import os,json,pathlib,datetime
+          log=pathlib.Path('/tmp/native-apk-check.log')
+          report={'result':os.environ['RESULT'],'releaseSource':'d6625abb57a43d63815324549d564a3283429c93','runUrl':os.environ['RUN_URL'],'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'log':log.read_text() if log.exists() else 'APK verification not run'}
+          pathlib.Path('/tmp/native-result.json').write_text(json.dumps(report,indent=2))
+          PYREPORT
+          git config user.name 'Independent APK delivery verification'
+          git config user.email 'checks@users.noreply.github.com'
+          blob=$(git hash-object -w /tmp/native-result.json)
+          tree=$(printf '100644 blob %s\tstatus.json\n' "$blob" | git mktree)
+          commit=$(printf 'Complete Android APK download verification\n' | git commit-tree "$tree")
+          git push origin "$commit:refs/heads/update72-final-apk-check" --force
